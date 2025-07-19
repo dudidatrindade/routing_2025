@@ -1,33 +1,7 @@
-libraries:
-Tkinter, folium, ortools, requests, flask, flask-cors, paho-mqtt, influxdb-client
-
-Docker installed and running OSRM in port 5000
-
-OSRM needs to have already extracted and contracted
-    e.g. 
-    Extraction (just when setuping OSRM; might take a quiet long time; will create a tone of archives into the folder)
-        docker run -t -v "${PWD}:/FOLDER NAME" osrm/osrm-backend `
-        osrm-extract -p /opt/car.lua /data/sul-latest.osm.pbf
-
-    Contraction (just when setuping OSRM; might take a quiet long time)
-        docker run -t -v "${PWD}:/FOLDER NAME" osrm/osrm-backend `
-        osrm-contract /data/sul-latest.osrm
-
-    Running
-        docker run -p 5000:5000 -v "${PWD}:/FOLDER NAME" osrm/osrm-backend `
-        osrm-routed /data/sul-latest.osrm
-
-    (Run all of this commands in powershell oppened directly in the folder where the .pbf file is;
-    right click in the background with no archive selected and open terminal; FOLDER NAME is the reffered to the
-    name of the folder where the .pbf file is)
-
-app.py (flask server) also needs to be runnig for the aplication to work;
-ATTENTION not to use the same port for the flask and the OSRM server
-
-Mosquito is the mqtt server running this project. open it in 1883 port (default) and make sure firewall is disabled
-for this port (add a new TCP rule)
-
-InfluxDB is also needed for the project to work. Data from Lixeias will be collected from there.
-
-The tsp_solver algotithm considers the first node the first being in the order of the list of coordinates and being part of the filtered list
-(If theres a start point that should not be changed, consider making it always 100% full)
+Flask>=2.0,<3.0
+Flask-Cors>=3.0
+paho-mqtt>=1.6
+influxdb-client>=1.30
+requests>=2.25
+folium>=0.12
+ortools>=9.5
