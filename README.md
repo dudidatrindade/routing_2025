@@ -38,7 +38,8 @@ Sistema de roteamento inteligente para coleta de lixo baseado em sensores de ní
    git clone https://github.com/dudidatrindade/routing2025.git
    cd routing2025
    ```
-2. \*\*Crie e configure o \*\*\`\` (variáveis abaixo).
+2. **Crie e configure o `.env`** (variáveis abaixo).
+
 3. **Backend**:
 
    ```bash
