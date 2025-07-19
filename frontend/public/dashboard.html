@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Rotas</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <header>
+        <h1>Dashboard de Rotas</h1>
+    </header>
+    <div class="container">
+        <section class="controls">
+            <div class="control-group">
+                <p><strong>Selecione os pontos:</strong></p>
+                <div>
+                    <label>
+                        <input type="radio" name="points" value="all" checked> Todos os pontos
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="radio" name="points" value="filtered"> Pontos com volume maior que
+                        <input type="number" id="volumeInput" placeholder="Ex: 50" style="width: 60px;"> %
+                    </label>
+                </div>
+            </div>
+            <div class="control-group">
+                <p><strong>Opção de prioridade:</strong></p>
+                <div>
+                    <label>
+                        <input type="radio" name="priority" value="recommended" checked> Aplicar regras de prioridade
+                        recomendadas
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="radio" name="priority" value="custom"> Regra personalizada
+                        <input type="number" id="betaInput" placeholder="Ex: 0.01" step="0.001" style="width: 70px;">
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="radio" name="priority" value="none"> Sem Regra de Prioridade
+                    </label>
+                </div>
+            </div>
+            <div class="control-group">
+                <button id="generateMapBtn">Gerar Mapa</button>
+            </div>
+        </section>
+
+        <section class="map-container" id="mapContainer">
+            <!-- Loading indicator -->
+            <div id="loading" style="display:none; text-align:center; font-weight:bold; margin:20px 0;">
+                Processando rota, por favor aguarde...
+            </div>
+            <!-- Container para o mapa -->
+            <div id="mapFrame">
+                <p>O mapa será carregado aqui.</p>
+            </div>
+        </section>
+
+        <!-- Seção para exibir os volumes dos sensores -->
+        <section class="sensor-container" id="sensorContainer">
+            <h2>Volume dos Sensores</h2>
+            <div class="sensor-options">
+                <label>
+                    <input type="radio" name="sensorView" value="list" checked> Exibir como Lista
+                </label>
+                <label>
+                    <input type="radio" name="sensorView" value="widgets"> Exibir como Widgets
+                </label>
+            </div>
+            <div id="sensorData">
+                <!-- Os dados dos sensores serão carregados aqui -->
+            </div>
+            <!-- Botão para atualizar os sensores -->
+            <div class="control-group">
+                <button id="updateSensorsBtn">Atualizar Sensores</button>
+            </div>
+        </section>
+    </div>
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <span id="closeModal" class="close">&times;</span>
+            <h4 id="modalTitle">Histórico de Dados</h4>
+            <canvas id="historyChart"></canvas>
+        </div>
+    </div>
+    <script src="js/script_map.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+
+</html>
