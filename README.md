@@ -38,6 +38,7 @@ Sistema de roteamento inteligente para coleta de lixo baseado em sensores de ní
    git clone https://github.com/dudidatrindade/routing2025.git
    cd routing2025
    ```
+
 2. **Crie e configure o `.env`** (variáveis abaixo).
 
 3. **Backend**:
@@ -46,24 +47,35 @@ Sistema de roteamento inteligente para coleta de lixo baseado em sensores de ní
    cd backend
    pip install -r requirements.txt
    ```
+
 4. **Frontend** (opcional para desenvolvimento local):
 
    ```bash
    cd frontend/public
    npm install
    ```
+
 5. **Inicie serviços com Docker Compose**:
 
    ```bash
    docker-compose up -d mosquitto influxdb osrm
    ```
-6. **Execute o backend**:
+
+6. **Dados para o OSRM**
+
+A pasta `data/` com os arquivos extraídos e contratados para o OSRM não está incluída no repositório. Você pode baixá-la no Google Drive em:
+
+> [Link para a pasta de dados OSRM no Drive](https://drive.google.com/drive/u/0/home)
+
+Coloque todo o conteúdo baixado dentro da pasta `data/` na raiz do projeto antes de iniciar o serviço OSRM.
+
+7. **Execute o backend**:
 
    ```bash
    cd backend
    python app.py
    ```
-7. **Abra o frontend**:
+8. **Abra o frontend**:
 
    * Sirva `frontend/public` em um servidor estático ou use Live Server no VS Code.
 
