@@ -24,7 +24,6 @@ Sistema de roteamento inteligente para coleta de lixo baseado em sensores de ní
 * Git
 * Python 3.8+ e pip
 * Bibliotecas Python: Tkinter, folium, ortools, requests, flask, flask-cors, paho-mqtt, influxdb-client
-* Node.js e npm/yarn (necessário apenas para desenvolvimento do frontend)
 * Docker e Docker Compose
 * Broker MQTT (Mosquitto) na porta 1883 (libere no firewall se necessário)
 * InfluxDB
