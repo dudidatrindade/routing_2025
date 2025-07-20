@@ -1,3 +1,4 @@
+import os
 import requests
 
 def get_osrm_matrix(coordinates, host='localhost', port=5000, annotation='distance'):
@@ -20,7 +21,7 @@ def get_osrm_matrix(coordinates, host='localhost', port=5000, annotation='distan
     return data[key]
 
 
-def get_route_segment(coord1, coord2, osrm_url="http://localhost:5000"):
+def get_route_segment(coord1, coord2, osrm_url=os.environ.get("OSRM_URL","http://osrm:5000")):
     """
     Retorna detalhes do segmento de rota entre duas coordenadas usando a OSRM Route API.
 

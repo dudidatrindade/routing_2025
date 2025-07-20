@@ -1,12 +1,13 @@
+import os
 import time
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 # Configurações do InfluxDB
-INFLUX_URL = "http://localhost:8086"  # URL do InfluxDB
-INFLUX_TOKEN = "O2IJnWNV-admggVDJHRqeTl_oqxquj0vByhWLLdLL0PRRLlJ3exte5b3cSB0Zcegk0nGPB9Bt0FVEtDy7fmqkA=="  # Substitua pelo seu token
-INFLUX_ORG = "Lixeia"                   # Sua organização
-INFLUX_BUCKET = "Sensor_Data"           # Seu bucket
+INFLUX_URL   = os.environ.get("INFLUX_URL",   "http://influxdb:8086")
+INFLUX_TOKEN = os.environ.get("INFLUX_TOKEN", "<seu_token>")
+INFLUX_ORG   = os.environ.get("INFLUX_ORG",   "<sua_org>")
+INFLUX_BUCKET= os.environ.get("INFLUX_BUCKET","Sensor_Data")
 
 # Inicializa o cliente do InfluxDB
 client_influx = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG)
