@@ -1,43 +1,55 @@
-# mqtt_client.py
-import paho.mqtt.client as mqtt
+import os
+import time
 import json
-from .influx_client import write_sensor_data  # Ajuste o import para o caminho real
+import paho.mqtt.client as mqtt
+from backend.sensor_control.influx_client import write_sensor_data
 
-MQTT_BROKER = 'localhost'  # ou o IP do seu broker
-MQTT_PORT = 1883
+# Lê do .env injetado pelo Docker
+MQTT_BROKER = os.environ.get("MQTT_BROKER", "mqtt-broker")
+MQTT_PORT   = int(os.environ.get("MQTT_PORT", 1883))
 
+# Cria o client global
 client = mqtt.Client()
+
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("[MQTT] Conectado com sucesso ao broker")
+        # Inscreve em todos os tópicos relevantes
+        client.subscribe("sensors/#")
+    else:
+        print(f"[MQTT] Falha na conexão, código de retorno {rc}")
 
 def on_message(client, userdata, msg):
     try:
-        # Converte o payload de JSON para dicionário
-        sensor_data = json.loads(msg.payload.decode())
-        print("[MQTT] Dados do sensor recebidos:", sensor_data)
-
-        # Chama a função que escreve no InfluxDB
+        payload = msg.payload.decode()
+        sensor_data = json.loads(payload)
+        print("[MQTT] Dados recebidos em", msg.topic, "→", sensor_data)
         write_sensor_data(sensor_data)
-
     except Exception as e:
         print("[MQTT] Erro ao processar mensagem:", e)
 
 def connect_mqtt():
-    client.on_message = on_message  # Registra a função de callback
-    rc = client.connect(MQTT_BROKER, MQTT_PORT, 60)
-    if rc == 0:
-        print("[MQTT] Conectado ao broker MQTT!")
-        # Inscreve-se no tópico onde o sensor publica os dados
-        client.subscribe("dados/sensor/#")
-        client.loop_start()  # Roda o loop em background
-        return True
-    else:
-        print(f"[MQTT] Falha na conexão. Código de retorno: {rc}")
-        return False
+    """ Tenta conectar indefinidamente até conseguir. """
+    # atribui callbacks
+    client.on_connect = on_connect
+    client.on_message = on_message
 
-def publish_message(topic, payload):
+    while True:
+        try:
+            client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
+            client.loop_start()
+            return client
+        except Exception as e:
+            print(f"[MQTT] Falha na conexão: {e}. Tentando novamente em 5s…")
+            time.sleep(5)
+
+def publish_message(topic: str, payload):
     """
-    Caso você queira enviar dados para o broker MQTT.
-    'payload' pode ser um dicionário que você converte para JSON, por exemplo.
+    Publica uma mensagem no broker.
+    Se payload for dict, converte para JSON automaticamente.
     """
     if isinstance(payload, dict):
         payload = json.dumps(payload)
-    client.publish(topic, payload)
+    result = client.publish(topic, payload)
+    if result.rc != mqtt.MQTT_ERR_SUCCESS:
+        print(f"[MQTT] Erro ao enviar mensagem: {mqtt.error_string(result.rc)}")
