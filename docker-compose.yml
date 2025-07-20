@@ -1,0 +1,54 @@
+version: "3.8"
+services:
+  mqtt:
+    image: eclipse-mosquitto:latest
+    container_name: mqtt-broker
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+
+  influxdb:
+    image: influxdb:2.0
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./influxdb-data:/var/lib/influxdb2
+
+  osrm:
+    image: osrm/osrm-backend:latest
+    container_name: osrm
+    command: osrm-routed --algorithm ch /data/sul-latest.osrm
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./data:/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: backend
+    command: python -m backend.app
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - mqtt
+      - influxdb
+      - osrm
+    restart: on-failure
+
+  frontend:
+    build:
+      context: frontend/public
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: on-failure

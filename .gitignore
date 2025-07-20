@@ -90,3 +90,9 @@ htmlcov/
 # --- Arquivos de texto a ignorar ---
 coordinates_test.txt
 notes.txt
+
+# Dados do InfluxDB (não versionar)
+influxdb-data/
+
+# Arquivo de variáveis de ambiente
+.env
