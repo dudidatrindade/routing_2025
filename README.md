@@ -1,6 +1,6 @@
 # Routing\_2025
 
-Este repositório contém a aplicação de roteirização e monitoramento, dividida em serviços de MQTT (Mosquitto), banco de séries temporais (InfluxDB), servidor de rotas (OSRM) e aplicações de backend/frontend.
+Sistema de roteamento inteligente para coleta de lixo baseado em sensores de nível em lixeiras. O firmware (ESP01/ESP32) mede distância até o lixo e publica JSON via MQTT em dados/sensor/#. O backend em Flask consome essas mensagens, converte distância em volume, armazena em InfluxDB, resolve o problema do caixeiro viajante via OSRM + OR-Tools e gera um mapa interativo. O frontend exibe dashboards e controles de coleta.
 
 ---
 
@@ -72,12 +72,12 @@ docker-compose up -d mosquitto influxdb osrm backend frontend
 
 * **Frontend**: [http://localhost:8000](http://localhost:8000)
 * **API (Flask)**: [http://localhost:5000](http://localhost:5000)
-* **InfluxDB UI**: [http://localhost:8086](http://localhost:8086) (use o mesmo drive de geodados para navegar nos buckets)
+* **InfluxDB UI**: [http://localhost:8086](http://localhost:8086)
 
 ---
 
 ## Links Úteis
 
-* Dados geográficos e InfluxDB: [Drive Compartilhado](https://drive.google.com/drive/folders/1E4rVM3cOQVnZlB26YH8m3vfqafWeesKd?usp=sharing)
+* Dados geográficos (OSRM), dados InfluxDB e .env: [Drive Compartilhado](https://drive.google.com/drive/folders/1E4rVM3cOQVnZlB26YH8m3vfqafWeesKd?usp=sharing)
 
 ---
