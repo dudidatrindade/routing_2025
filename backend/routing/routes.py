@@ -4,6 +4,7 @@ import folium
 from folium.plugins import PolyLineTextPath
 from folium import Element
 from flask import Blueprint, request, jsonify, send_from_directory
+from flask_cors import cross_origin
 from .tsp_solver import solve_tsp
 from .coordinates import COORDINATES
 from .osrm_utils import get_route_segment
@@ -22,6 +23,7 @@ def get_marker_color(volume):
         return 'red'
 
 @routes.route('/api/mapa', methods=['GET'])
+@cross_origin()
 def get_mapa():
     # Parâmetros de consulta
     min_volume = request.args.get('min_volume', default=None, type=int)
@@ -104,9 +106,8 @@ def get_mapa():
                         width: 24px;
                         height: 24px;
                         line-height: 24px;
-                        border: 2px solid #fff;">
-                        {ordem}
-                    </div>
+                        border: 2px solid #fff;"
+                    ><strong>{ordem}</strong></div>
                     """
                 )
             ).add_to(m)
@@ -180,6 +181,7 @@ def get_mapa():
     return jsonify({"status": "success", "map_file": "map/" + map_file_name}), 200
 
 @routes.route('/static/<path:filename>')
+@cross_origin()
 def serve_static(filename):
     base_dir = os.path.abspath(os.path.dirname(__file__))
     static_folder = os.path.join(base_dir, '..', 'static')

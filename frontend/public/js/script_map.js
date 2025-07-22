@@ -1,6 +1,9 @@
 /**
  * script_map.js: Controla a interação do dashboard de rotas e sensores.
  */
+
+const API_BASE = 'http://localhost:5000';
+
 document.addEventListener('DOMContentLoaded', function () {
     // Carrega os dados dos sensores assim que a página é aberta
     loadSensorData();
@@ -8,14 +11,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // Ao clicar no botão "Gerar Mapa"
     const generateMapBtn = document.getElementById('generateMapBtn');
     generateMapBtn.addEventListener('click', function () {
-        let url = '/api/mapa';
+        // Monta URL absoluta para o endpoint de mapa
+        let url = `${API_BASE}/api/mapa`;
 
         // Opção de pontos: "all" ou "filtered"
         let pointsOption = document.querySelector('input[name="points"]:checked').value;
         if (pointsOption === 'filtered') {
             let volumeThreshold = document.getElementById('volumeInput').value;
             if (volumeThreshold) {
-                url += '?min_volume=' + volumeThreshold;
+                url += `?min_volume=${volumeThreshold}`;
             }
         }
 
@@ -24,39 +28,35 @@ document.addEventListener('DOMContentLoaded', function () {
         if (priorityOption === 'custom') {
             url += (url.includes('?') ? '&' : '?') + 'prioritize=1';
             let betaValue = document.getElementById('betaInput').value;
-            url += '&beta=' + betaValue;
+            url += `&beta=${betaValue}`;
         } else if (priorityOption === 'recommended') {
             url += (url.includes('?') ? '&' : '?') + 'prioritize=1';
         }
 
-        // Mostra loading e carrega mapa
+        // Chama loadMap com a URL completa e atualiza sensores
         loadMap(url);
-        // Atualiza dados dos sensores também
         loadSensorData();
     });
 
     /**
      * Função para carregar o mapa
      */
-    function loadMap(url) {
+    function loadMap(fullUrl) {
         const mapContainer = document.getElementById('mapFrame');
         const loading = document.getElementById('loading');
-        // mostra o loading
+
         loading.style.display = 'block';
-        // limpa container antes de atualizar
         mapContainer.innerHTML = '';
 
-        fetch(url, { method: 'GET' })
+        fetch(fullUrl, { method: 'GET' })
             .then(response => response.json())
             .then(data => {
                 if (data.status === "success") {
                     const iframe = document.createElement('iframe');
-                    // Ajuste para rota relativa
-                    iframe.src = '/static/' + data.map_file;
+                    iframe.src = `${API_BASE}/static/${data.map_file}`;
                     iframe.width = "100%";
                     iframe.height = "600";
                     iframe.style.border = "none";
-                    // insere o mapa
                     mapContainer.appendChild(iframe);
                 } else {
                     mapContainer.innerText = "Erro ao carregar o mapa: " + data.message;
@@ -67,7 +67,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 mapContainer.innerText = "Erro ao carregar o mapa.";
             })
             .finally(() => {
-                // esconde o loading
                 loading.style.display = 'none';
             });
     }
@@ -76,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function () {
      * Função para carregar os dados dos sensores do InfluxDB
      */
     function loadSensorData() {
-        fetch('/api/sensor_control/sensores', { method: 'GET' })
+        fetch(`${API_BASE}/api/sensor_control/sensores`, { method: 'GET' })
             .then(response => response.json())
             .then(sensorData => {
                 renderSensorData(sensorData);
@@ -92,8 +91,8 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     function renderSensorData(sensorData) {
         const viewMode = document.querySelector('input[name="sensorView"]:checked').value;
-        const sensorDataContainer = document.getElementById('sensorData');
-        sensorDataContainer.innerHTML = ""; // Limpa o conteúdo
+        const container = document.getElementById('sensorData');
+        container.innerHTML = "";
 
         if (viewMode === 'list') {
             const ul = document.createElement('ul');
@@ -103,27 +102,32 @@ document.addEventListener('DOMContentLoaded', function () {
                 const li = document.createElement('li');
                 li.className = "sensor-list-item";
                 li.innerHTML = `
-                  <span class="sensor-id" data-sensor-id="${sensor.sensor_id}" style="cursor:pointer; color: #7CCE00;"><strong>${sensor.sensor_id}</strong></span>
+                  <span class="sensor-id" data-sensor-id="${sensor.sensor_id}" style="cursor:pointer; color: #7CCE00;">
+                    <strong>${sensor.sensor_id}</strong>
+                  </span>
                   - <span class="badge">${sensor.fill_percentage.toFixed(2)}%</span>
                   <br>
                   <small class="text-muted">Atualizado em: ${updateTime}</small>
                 `;
                 ul.appendChild(li);
             });
-            sensorDataContainer.appendChild(ul);
-        } else if (viewMode === 'widgets') {
+            container.appendChild(ul);
+        } else {
             sensorData.forEach(sensor => {
                 let updateTime = new Date(sensor.time).toLocaleString();
                 const widget = document.createElement('div');
                 widget.className = 'sensor-widget';
                 widget.innerHTML = `
-                  <h5 class="sensor-id" data-sensor-id="${sensor.sensor_id}" style="cursor:pointer; color: #7CCE00;">${sensor.sensor_id}</h5>
+                  <h5 class="sensor-id" data-sensor-id="${sensor.sensor_id}" style="cursor:pointer; color: #7CCE00;">
+                    ${sensor.sensor_id}
+                  </h5>
                   <p>Volume: ${sensor.fill_percentage.toFixed(2)}%</p>
                   <small class="text-muted">Atualizado em: ${updateTime}</small>
                 `;
-                sensorDataContainer.appendChild(widget);
+                container.appendChild(widget);
             });
         }
+
         addSensorClickListeners();
     }
 
@@ -131,10 +135,9 @@ document.addEventListener('DOMContentLoaded', function () {
      * Adiciona os event listeners aos elementos de sensor para abrir o modal
      */
     function addSensorClickListeners() {
-        const sensorElements = document.querySelectorAll('.sensor-id');
-        sensorElements.forEach(elem => {
-            elem.addEventListener('click', function () {
-                const sensorId = this.getAttribute('data-sensor-id');
+        document.querySelectorAll('.sensor-id').forEach(elem => {
+            elem.addEventListener('click', () => {
+                const sensorId = elem.getAttribute('data-sensor-id');
                 openHistoryModal(sensorId);
             });
         });
@@ -156,24 +159,23 @@ document.addEventListener('DOMContentLoaded', function () {
     function closeHistoryModal() {
         const modal = document.getElementById('historyModal');
         modal.style.display = 'none';
-        if (window.historyChart && typeof window.historyChart.destroy === "function") {
+        if (window.historyChart) {
             window.historyChart.destroy();
             window.historyChart = null;
         }
     }
 
-    // Listeners para fechar o modal
     document.getElementById('closeModal').addEventListener('click', closeHistoryModal);
-    window.addEventListener('click', function (event) {
+    window.addEventListener('click', event => {
         const modal = document.getElementById('historyModal');
-        if (event.target == modal) closeHistoryModal();
+        if (event.target === modal) closeHistoryModal();
     });
 
     /**
      * Função para carregar o histórico do sensor via endpoint
      */
     function loadSensorHistory(sensorId) {
-        fetch('/api/sensor_control/historico?sensor_id=' + sensorId)
+        fetch(`${API_BASE}/api/sensor_control/historico?sensor_id=${sensorId}`)
             .then(response => response.json())
             .then(data => {
                 const labels = data.map(item => new Date(item.time).toLocaleString());
@@ -190,13 +192,13 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     function renderHistoryChart(labels, values) {
         const ctx = document.getElementById('historyChart').getContext('2d');
-        if (window.historyChart && typeof window.historyChart.destroy === "function") {
+        if (window.historyChart) {
             window.historyChart.destroy();
         }
         window.historyChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: labels,
+                labels,
                 datasets: [{
                     label: 'Fill Percentage (%)',
                     data: values,
@@ -210,7 +212,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 responsive: true,
                 scales: {
                     x: { title: { display: true, text: 'Data/Hora' } },
-                    y: { title: { display: true, text: 'Fill Percentage (%)' }, suggestedMin: 0, suggestedMax: 100 }
+                    y: {
+                        title: { display: true, text: 'Fill Percentage (%)' },
+                        suggestedMin: 0, suggestedMax: 100
+                    }
                 }
             }
         });
@@ -223,13 +228,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Botão "Atualizar Sensores"
     document.getElementById('updateSensorsBtn').addEventListener('click', function () {
-        fetch('/api/sensor_control/atualizar', {
+        fetch(`${API_BASE}/api/sensor_control/atualizar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: "all" })
         })
             .then(response => response.json())
-            .then(data => {
+            .then(() => {
                 alert("Comando enviado para atualizar os sensores!");
                 setTimeout(loadSensorData, 5000);
             })
